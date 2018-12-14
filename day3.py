@@ -28,8 +28,10 @@ class Claim:
         return self.id
 
 class Fabric:
-    layout = [[None]]
     def __init__(self):
+        self.layout = [[None]]
+        self.claims = set()
+        self.solitary_claims = set()
         self.x = 0
         self.y = 0
     
@@ -72,6 +74,12 @@ class Fabric:
     def layout():
         return self.layout
 
+    def totalClaims():
+        return self.total_claims
+
+    def solitaryClaims():
+        return self.solitary_claims
+
 def getInput(filename):
     value_array = []
     with open(filename) as f:
@@ -99,6 +107,7 @@ def plotClaim(claim_map, claim_list):
                     claim_map[y_][x_] = [id]
                 else:
                     claim_map[y_][x_].append(id)
+
     return claim_map
 
 def findClaimOverlap(fabric):
@@ -117,7 +126,21 @@ def findClaimOverlap(fabric):
         for x_ in range(width):
             if overlays[y_][x_] != None and len(overlays[y_][x_]) > 1:
                 overlaps += 1
+
     return overlaps, overlays
+
+def findIsolatedClaims(claim_map, width, height):
+    shared = set()
+    ids = set()
+    for y_ in range(height):
+        for x_ in range(width):
+            if claim_map[y_][x_] != None:
+                tmp = set(claim_map[y_][x_])
+                ids = ids.union(tmp)
+                if len(tmp) >= 2:
+                    shared = shared.union(tmp)
+
+    return ids.difference(shared)
 
 def writeClaimsToFile(filename, claim_map):
     f = open(filename, 'w')
@@ -128,6 +151,8 @@ magic_fabric = Fabric()
 claims = getInput("input3.txt")
 magic_fabric = processClaims(claims, magic_fabric)
 overlayed, claim_map = findClaimOverlap(magic_fabric)
+iso_ids = findIsolatedClaims(claim_map, len(claim_map[0]), len(claim_map))
 #writeClaimsToFile("claims.map", claim_map)
 print("The magic fabric is {}units x {}units.".format(magic_fabric.x, magic_fabric.y))
 print("There are {}units^2 of overlap.".format(overlayed))
+print("ID(s) which have no overlap: {}.".format(iso_ids))
